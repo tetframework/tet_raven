@@ -1,6 +1,6 @@
 from pyramid.events import subscriber, BeforeRender
 from tet.util.json import js_safe_dumps
-
+from tet.viewlet import BeforeViewletRender
 
 script_template = '''\
 <script src="{url}"></script>
@@ -14,7 +14,7 @@ class RavenJSTemplate(object):
         self.raven_js = raven_js
 
     def __call__(self, *plugins):
-        if self.raven_js.dsn is None:
+        if not self.raven_js.dsn or self.raven_js.dsn == 'null':
             return ''
 
         template = str(self)
@@ -52,3 +52,4 @@ def includeme(config, dsn=None, static_view_url=None):
     raven_js = RavenJS(dsn=dsn)
     config.registry.raven_js = raven_js
     config.add_subscriber(raven_js.add_js_injection, BeforeRender)
+    config.add_subscriber(raven_js.add_js_injection, BeforeViewletRender)
