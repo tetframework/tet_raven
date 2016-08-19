@@ -1,0 +1,4 @@
+2016-08-19  Antti Haapala  <antti.haapala@anttipatterns.com>
+
+    * Started keeping changelog. Cleanups; officially removed Python 2 support;
+      added some typing hints.

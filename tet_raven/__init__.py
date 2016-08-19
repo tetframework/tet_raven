@@ -1,8 +1,9 @@
 from __future__ import absolute_import
 
-import sys
-from raven.utils.wsgi import get_current_url, get_headers, get_environ
+from pyramid.request import Request
 from raven import Client as RavenClient
+from raven.utils.wsgi import get_current_url, get_headers, get_environ
+
 
 def raven_tween_factory(handler, registry):
     client = registry.raven
@@ -21,19 +22,19 @@ def raven_tween_factory(handler, registry):
 
         return response
 
-    def get_http_context(environ):
-        return {
-            'method': environ.get('REQUEST_METHOD'),
-            'url': get_current_url(environ, strip_querystring=True),
-            'query_string': environ.get('QUERY_STRING'),
-            'headers': dict(get_headers(environ)),
-            'env': dict(get_environ(environ)),
-        }
+    def get_http_context(request: Request):
+        environ = request.environ
+        return dict(method=environ.get('REQUEST_METHOD'),
+                    url=get_current_url(environ, strip_querystring=True),
+                    query_string=environ.get('QUERY_STRING'),
+                    headers=dict(get_headers(environ)),
+                    env=dict(get_environ(request.environ)))
 
     def handle_exception(environ=None):
         return client.captureException()
 
     return raven_tween
+
 
 def includeme(config, over=None, under=None):
     settings = config.registry.settings
