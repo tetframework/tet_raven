@@ -9,7 +9,7 @@ def raven_tween_factory(handler, registry):
     client = registry.raven
 
     def raven_tween(request):
-        client.http_context(get_http_context(request.environ))
+        client.http_context(get_http_context(request))
         try:
             response = handler(request)
 
