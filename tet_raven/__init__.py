@@ -7,6 +7,8 @@ from raven.utils.wsgi import get_current_url, get_headers, get_environ
 
 def raven_tween_factory(handler, registry):
     client = registry.raven
+    exception_filter = registry.tet_raven.exception_filter
+    extra_data = registry.tet_raven.extra_data
 
     def raven_tween(request):
         client.http_context(get_http_context(request))
@@ -14,6 +16,7 @@ def raven_tween_factory(handler, registry):
             response = handler(request)
 
         except Exception:
+            client.
             handle_exception(request.environ)
             raise
 
@@ -36,7 +39,29 @@ def raven_tween_factory(handler, registry):
     return raven_tween
 
 
-def includeme(config, over=None, under=None):
+class TetRavenSettings:
+    def __init__(self):
+        self.exception_filter = lambda request, exception: True
+        self.extra_data = lambda request, exception: {}
+
+    def set_exception_filter(self, func) -> None:
+        self.exception_filter = func
+
+    def set_extra_data(self, func) -> None:
+        self.extra_data = func
+
+
+def set_raven_exception_factory(config, filter_func):
+    tet_raven = config.registry.tet_raven
+    tet_raven.set_exception_filter(filter_func)
+
+
+def set_raven_extra_data(config, extra_data_func)
+    tet_raven = config.registry.tet_raven
+    tet_raven.set_extra_data(extra_data_func)
+
+
+def includeme(config, over=None, under=None) -> None:
     settings = config.registry.settings
     if 'raven.dsn' in settings:
         config.registry.raven = RavenClient(settings['raven.dsn'])
@@ -49,3 +74,7 @@ def includeme(config, over=None, under=None):
                 'pyramid.tweens.excview_tween_factory',
                 'INGRESS'
             ))
+
+    registry.tet_raven = TetRavenSettings()
+    config.add_directive('set_raven_exception_filter', set_raven_exception_filter)
+    config.add_directive('set_raven_extra_data', set_raven_extra_data)
