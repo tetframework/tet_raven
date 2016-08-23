@@ -15,8 +15,8 @@ def raven_tween_factory(handler, registry):
         try:
             response = handler(request)
 
-        except Exception:
-            client.
+        except Exception as e:
+            client.extra_context(extra_data(request, e))
             handle_exception(request.environ)
             raise
 
@@ -51,12 +51,12 @@ class TetRavenSettings:
         self.extra_data = func
 
 
-def set_raven_exception_factory(config, filter_func):
+def set_raven_exception_filter(config, filter_func):
     tet_raven = config.registry.tet_raven
     tet_raven.set_exception_filter(filter_func)
 
 
-def set_raven_extra_data(config, extra_data_func)
+def set_raven_extra_data(config, extra_data_func):
     tet_raven = config.registry.tet_raven
     tet_raven.set_extra_data(extra_data_func)
 
@@ -75,6 +75,6 @@ def includeme(config, over=None, under=None) -> None:
                 'INGRESS'
             ))
 
-    registry.tet_raven = TetRavenSettings()
+    config.registry.tet_raven = TetRavenSettings()
     config.add_directive('set_raven_exception_filter', set_raven_exception_filter)
     config.add_directive('set_raven_extra_data', set_raven_extra_data)
