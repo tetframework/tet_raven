@@ -13,7 +13,7 @@ class RavenJSTemplate(object):
         self.request = request
         self.raven_js = raven_js
 
-    def __call__(self, *plugins):
+    def __call__(self, *plugins, user=None):
         if not self.raven_js.dsn or self.raven_js.dsn == 'null':
             return ''
 
@@ -21,6 +21,10 @@ class RavenJSTemplate(object):
         for i in plugins:
             url = self.request.static_url('tet_raven:static/plugins/{}.js'.format(i))
             template += '<script src="{}"></script>\n'.format(url)
+
+        if user:
+            template += '<script>Raven.setUser({})</script>'.format(
+                js_safe_dumps(user))
 
         return template
 
