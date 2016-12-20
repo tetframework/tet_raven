@@ -15,9 +15,11 @@ def raven_tween_factory(handler, registry):
         try:
             response = handler(request)
 
-        except Exception as e:
-            client.context.merge(extra_data(request, e))
-            handle_exception(request.environ)
+        except BaseException as e:
+            if not exception_filter(request, e):
+                client.context.merge(extra_data(request, e))
+                handle_exception(request.environ)
+
             raise
 
         finally:
@@ -76,5 +78,7 @@ def includeme(config, over=None, under=None) -> None:
             ))
 
     config.registry.tet_raven = TetRavenSettings()
-    config.add_directive('set_raven_exception_filter', set_raven_exception_filter)
-    config.add_directive('set_raven_extra_data', set_raven_extra_data)
+    config.add_directive(
+        'set_raven_exception_filter', set_raven_exception_filter)
+    config.add_directive(
+        'set_raven_extra_data', set_raven_extra_data)
