@@ -16,7 +16,7 @@ def raven_tween_factory(handler, registry):
             response = handler(request)
 
         except BaseException as e:
-            if not exception_filter(request, e):
+            if exception_filter(request, e):
                 client.context.merge(extra_data(request, e))
                 handle_exception(request.environ)
 
